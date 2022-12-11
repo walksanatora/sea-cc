@@ -80,6 +80,14 @@ if compressed then
     output_file.write(output:match("(.+)%..+"))
     output_file.write('",textutils.unserialise(I:d(c)))s(o)')
 else
-
+    output_file.write('local c,o,f,C,t,s,D = table.unpack({\nloadstring([===[')
+    local arh = fs.open(input,"rb")
+    local arc = arh.readAll()
+    local encoded = getchunk(encode(arc,pat_nonascii))
+    output_file.write(encoded)
+    arh.close()
+    output_file.write(']===])()\n,shell.resolve(""),fs.open,fs.combine,type,shell.setDir,shell.dir()})\nfunction u(p,z)fs.makeDir(C(o,p))s(C(o,p))for k, v in pairs(z) do if t(v) == "table" then u(p.."/"..k,v)elseif t(v) == "string" then local h = f(fs.combine(o,C(p,k)),"wb")h.write(v)h.close()end end end u("')
+    output_file.write(output:match("(.+)%..+"))
+    output_file.write('",textutils.unserialise(c)))s(o)')
 end
 output_file.close()
