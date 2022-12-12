@@ -28,7 +28,7 @@ if out_name == nil then
     out_name = fs.getName(output):match("(.+)%..+$")
 end
 if not fs.exists(input) then error("input file does not exists "..input) end
-if fs.exists(output) then
+if fs.exists(output) and not settings.get("mksea.overwrite") then
     print("Overwrite output file? <Y/N>")
     local i = read()
     if i ~= "Y" then print("Cancled") return end
@@ -51,13 +51,11 @@ local escapes = {
 }
 
 local pat_nonascii = '[%c\r\n\\"\128-\255]'
-
-function getchunk(encoded)
-	return 'return "' .. encoded .. '"'
-end
+--Untill https://github.com/cc-tweaked/CC-Tweaked/issues/1246 gets merged
+--i have to suffer with escaping the binary data
+local pat_nonascii = '[\r\n\\"]'
 
 function encode(data, escape_pattern)
-	if not escape_pattern then escape_pattern = abs.ESCAPE_MINIMAL end
 	return data:gsub(escape_pattern, function(char)
 		return escapes[char] or string.format('\\%03d', string.byte(char))
 	end)
@@ -65,30 +63,28 @@ end
 
 local output_file = fs.open(output,'wb')
 if compressed then
-    output_file.write('local I,c,o,f,C,t,s,D = table.unpack({\nloadstring([===[')
+    output_file.write('local I,c,o,f,C,t,s,D = table.unpack({\nloadstring([=[')
     local ldh = fs.open(fs.combine(fs.getDir(shell.getRunningProgram()),"LD.lua"),'rb')
     local ldc = ldh.readAll()
     output_file.write(ldc)
     ldh.close()
-    output_file.write(']===])(),\nloadstring([===[')
-    local arh = fs.open(input,"rb")
-    local arc = arh.readAll()
-    local encoded = getchunk(encode(arc,pat_nonascii))
-    output_file.write(encoded)
-    arh.close()
-    output_file.write(']===])()\n,shell.resolve(""),fs.open,fs.combine,type,shell.setDir,shell.dir()})\nfunction u(p,z)fs.makeDir(C(o,p))s(C(o,p))for k, v in pairs(z) do if t(v) == "table" then u(p.."/"..k,v)elseif t(v) == "string" then local h = f(fs.combine(o,C(p,k)),"wb")h.write(v)h.close()end end end u("')
+    output_file.write(']=])()\n,(function()local u,g = fs.open(shell.getRunningProgram(),"rb")g=u.readAll()u.close()return g:match("%[===%[(.+)%]===%]") end)(),shell.resolve(""),fs.open,fs.combine,type,shell.setDir,shell.dir()})\nfunction u(p,z)fs.makeDir(C(o,p))s(C(o,p))for k, v in pairs(z) do if t(v) == "table" then u(p.."/"..k,v)elseif t(v) == "string" then local h = f(fs.combine(o,C(p,k)),"wb")h.write(v)h.close()end end end u("')
     output_file.write(out_name)
     output_file.write('",textutils.unserialise(I:d(c)))s(o)')
-else
-    output_file.write('local c,o,f,C,t,s,D = table.unpack({\nloadstring([===[')
+    output_file.write('\n--[===[')
     local arh = fs.open(input,"rb")
-    local arc = arh.readAll()
-    local encoded = getchunk(encode(arc,pat_nonascii))
-    output_file.write(encoded)
+    output_file.write(arh.readAll())
     arh.close()
-    output_file.write(']===])()\n,shell.resolve(""),fs.open,fs.combine,type,shell.setDir,shell.dir()})\nfunction u(p,z)fs.makeDir(C(o,p))s(C(o,p))for k, v in pairs(z) do if t(v) == "table" then u(p.."/"..k,v)elseif t(v) == "string" then local h = f(fs.combine(o,C(p,k)),"wb")h.write(v)h.close()end end end u("')
+    output_file.write(']===]')
+else
+    output_file.write('local c,o,f,C,t,s,D = table.unpack({\nloadstring((function()local u,g = fs.open(shell.getRunningProgram(),"rb")g=u.readAll()u.close()return g:match("%[===%[(.+)%]===%]") end)(),shell.resolve(""),fs.open,fs.combine,type,shell.setDir,shell.dir()})\nfunction u(p,z)fs.makeDir(C(o,p))s(C(o,p))for k, v in pairs(z) do if t(v) == "table" then u(p.."/"..k,v)elseif t(v) == "string" then local h = f(fs.combine(o,C(p,k)),"wb")h.write(v)h.close()end end end u("')
     output_file.write(out_name)
     output_file.write('",textutils.unserialise(c))s(o)')
+    output_file.write('\n--[===[')
+    local arh = fs.open(input,"rb")
+    output_file.write(arh.readAll())
+    arh.close()
+    output_file.write(']===]')
 end
 print("auto_extract: "..out_name)
 
