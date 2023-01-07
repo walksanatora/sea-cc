@@ -7,7 +7,3 @@ usage `mksea <archive> <output> <compressed> [output folder name] [Overwrite/Mer
 `Overwrite/Merge` the option for what to do if output folder allready exists defauts to Overwrite
 
 (LD.lua is a stripped+minified [LibDeflate](https://github.com/MCJack123/CC-Archive#libdeflate))
-
-also uses
-https://github.com/squeek502/lua-arbitrary-binary-string/blob/master/arbitrary-binary-string.lua
-to properlly embed the data within the file

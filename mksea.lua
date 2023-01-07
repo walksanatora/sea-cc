@@ -37,30 +37,6 @@ end
 --now we know that 1. all options are valid
 --and that we are OK to overwrite the output (Possibly)
 
-
-local escapes = {
-	['\a'] = '\\a',
-	['\b'] = '\\b',
-	['\f'] = '\\f',
-	['\n'] = '\\n',
-	['\r'] = '\\r',
-	['\t'] = '\\t',
-	['\v'] = '\\v',
-	['\\'] = '\\\\',
-	['"'] = '\\"',
-}
-
-local pat_nonascii = '[%c\r\n\\"\128-\255]'
---Untill https://github.com/cc-tweaked/CC-Tweaked/issues/1246 gets merged
---i have to suffer with escaping the binary data
-local pat_nonascii = '[\r\n\\"]'
-
-function encode(data, escape_pattern)
-	return data:gsub(escape_pattern, function(char)
-		return escapes[char] or string.format('\\%03d', string.byte(char))
-	end)
-end
-
 local output_file = fs.open(output,'wb')
 if compressed then
     output_file.write('local I,c,o,f,C,t,s,D = table.unpack({\nloadstring([=[')
