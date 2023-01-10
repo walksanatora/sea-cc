@@ -32,7 +32,7 @@ local data = content:match("%[===%[(.+)%]===%]") or content --extract from SEA o
 print("content bytes:",#data)
 local decode = ld:d(data)
 if not decode then
-    print("unnable to decompress GZIP data, is it corrupt")
+    print("unnable to decompress GZIP data, is it a VGZ/SEA")
     return
 end
 local t = textutils.unserialise(decode)
