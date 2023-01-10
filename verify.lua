@@ -16,8 +16,8 @@ if not loaded_ld then
     error("failed to load stripped LibDeflate: "..ld)
 end
 
-local o = shell.resolve(...)
-if not fs.exists(o) then
+local o = ... and shell.resolve(...) or nil
+if o and (not fs.exists(o)) or true then
     print("verify.lua - VGZ and SEA archive verifier")
     print("Usage:")
     print("verify <archive>")
