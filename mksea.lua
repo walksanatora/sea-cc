@@ -12,7 +12,13 @@ end
 
 local args = {...}
 if #args < 3 then
-    error("insufficent args")
+    print("mksea.lua")
+    print("usage: mksea.lua <archive> <output> <compressed>")
+    print("archive should be a vfs/vgz archive")
+    print("output should be the path to output archive file to")
+    print("compressed is true if the archive is vgz")
+    print(" and false if vfs")
+    return
 end
 local input = shell.resolve(table.remove(args,1))
 local output = shell.resolve(table.remove(args,1))
